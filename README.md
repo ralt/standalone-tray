@@ -1,8 +1,8 @@
-# tray-window
+# standalone-tray
 
 A system tray in a plain Wayland window.
 
-`tray-window` is a StatusNotifierHost (SNI/AppIndicator host) that displays
+`standalone-tray` is a StatusNotifierHost (SNI/AppIndicator host) that displays
 tray icons inside an ordinary application window — no layer-shell, no panel.
 The window can be tiled, floated, embedded, moved or hidden by any Wayland
 compositor like any other application. It is meant for compositors (such as
@@ -51,7 +51,7 @@ Build and install:
 $ cargo install --path .
 ```
 
-or just build a release binary at `target/release/tray-window`:
+or just build a release binary at `target/release/standalone-tray`:
 
 ```console
 $ cargo build --release
@@ -62,7 +62,7 @@ $ cargo build --release
 Run the binary; there is no configuration:
 
 ```console
-$ tray-window
+$ standalone-tray
 ```
 
 It immediately starts hosting StatusNotifierItems. Note that only one

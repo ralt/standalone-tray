@@ -51,7 +51,7 @@ pub fn widget() -> gtk::Box {
 fn apply(container: &gtk::Box, image: &gtk::Image, label: &gtk::Label, snapshot: &Snapshot) {
     if std::env::var_os("TRAY_DEBUG").is_some() {
         eprintln!(
-            "tray-window: battery: present={} {:.0}% state={} icon={}",
+            "standalone-tray: battery: present={} {:.0}% state={} icon={}",
             snapshot.present, snapshot.percentage, snapshot.state, snapshot.icon_name
         );
     }
@@ -135,6 +135,6 @@ async fn watch(tx: async_channel::Sender<Snapshot>) {
     }
     .await;
     if let Err(e) = result {
-        eprintln!("tray-window: battery widget disabled: {e}");
+        eprintln!("standalone-tray: battery widget disabled: {e}");
     }
 }

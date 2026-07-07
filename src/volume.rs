@@ -56,11 +56,11 @@ fn apply(container: &gtk::Box, image: &gtk::Image, label: &gtk::Label, state: Op
     if std::env::var_os("TRAY_DEBUG").is_some() {
         match state {
             Some(s) => eprintln!(
-                "tray-window: volume: {:.0}% muted={}",
+                "standalone-tray: volume: {:.0}% muted={}",
                 s.volume * 100.0,
                 s.muted
             ),
-            None => eprintln!("tray-window: volume: unavailable"),
+            None => eprintln!("standalone-tray: volume: unavailable"),
         }
     }
     let Some(state) = state else {
@@ -101,7 +101,7 @@ fn run_wpctl(args: &[&str]) {
             .status()
             .await
         {
-            eprintln!("tray-window: wpctl failed: {e}");
+            eprintln!("standalone-tray: wpctl failed: {e}");
         }
     });
 }
@@ -159,7 +159,7 @@ async fn watch(tx: async_channel::Sender<Option<State>>) {
             let _ = child.kill().await;
         }
         Err(e) => {
-            eprintln!("tray-window: pactl unavailable ({e}), polling volume instead");
+            eprintln!("standalone-tray: pactl unavailable ({e}), polling volume instead");
             loop {
                 tokio::time::sleep(std::time::Duration::from_secs(2)).await;
                 let state = read_state().await;

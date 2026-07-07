@@ -27,7 +27,7 @@ enum Msg {
 
 fn main() -> glib::ExitCode {
     let app = gtk::Application::builder()
-        .application_id("com.github.ralt.TrayWindow")
+        .application_id("com.github.ralt.StandaloneTray")
         .build();
     app.connect_activate(build_ui);
     app.run()
@@ -100,7 +100,7 @@ fn build_ui(app: &gtk::Application) {
         let client = match Client::new().await {
             Ok(client) => Arc::new(client),
             Err(e) => {
-                eprintln!("tray-window: failed to connect to session bus: {e}");
+                eprintln!("standalone-tray: failed to connect to session bus: {e}");
                 return;
             }
         };
@@ -167,7 +167,7 @@ fn build_ui(app: &gtk::Application) {
 
 fn handle_event(tray: &Rc<RefCell<Tray>>, event: Event) {
     if std::env::var_os("TRAY_DEBUG").is_some() {
-        eprintln!("tray-window: event: {event:?}");
+        eprintln!("standalone-tray: event: {event:?}");
     }
     match event {
         Event::Add(address, _) => {
@@ -268,7 +268,7 @@ fn send_activate(tray: &Rc<RefCell<Tray>>, request: ActivateRequest) {
     };
     runtime().spawn(async move {
         if let Err(e) = client.activate(request).await {
-            eprintln!("tray-window: activate request failed: {e}");
+            eprintln!("standalone-tray: activate request failed: {e}");
         }
     });
 }
@@ -371,7 +371,7 @@ async fn watch_unregistered(tx: async_channel::Sender<Msg>) {
     }
     .await;
     if let Err(e) = result {
-        eprintln!("tray-window: failed to watch item unregistrations: {e}");
+        eprintln!("standalone-tray: failed to watch item unregistrations: {e}");
     }
 }
 
@@ -394,7 +394,7 @@ fn context_menu_fallback(address: String, x: i32, y: i32) {
         }
         .await;
         if let Err(e) = result {
-            eprintln!("tray-window: ContextMenu call failed: {e}");
+            eprintln!("standalone-tray: ContextMenu call failed: {e}");
         }
     });
 }

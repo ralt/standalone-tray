@@ -1,5 +1,5 @@
 [package]
-name = "tray-window"
+name = "standalone-tray"
 version = "0.1.0"
 edition = "2021"
 description = "A StatusNotifierHost that displays tray icons in a normal Wayland window"

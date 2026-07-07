@@ -825,6 +825,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "standalone-tray"
+version = "0.1.0"
+dependencies = [
+ "async-channel",
+ "futures-util",
+ "gtk4",
+ "system-tray",
+ "tokio",
+ "zbus",
+]
+
+[[package]]
 name = "syn"
 version = "2.0.118"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1010,18 +1022,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db97caf9d906fbde555dd62fa95ddba9eecfd14cb388e4f491a66d74cd5fb79a"
 dependencies = [
  "once_cell",
-]
-
-[[package]]
-name = "tray-window"
-version = "0.1.0"
-dependencies = [
- "async-channel",
- "futures-util",
- "gtk4",
- "system-tray",
- "tokio",
- "zbus",
 ]
 
 [[package]]
