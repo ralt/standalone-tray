@@ -72,7 +72,7 @@ fn build_ui(app: &gtk::Application) {
         .margin_bottom(4)
         .margin_start(4)
         .margin_end(4)
-        .halign(gtk::Align::Start)
+        .halign(gtk::Align::Center)
         .valign(gtk::Align::Center)
         .build();
     row.append(&container);
