@@ -13,7 +13,7 @@ use gtk::{gdk, glib};
 use system_tray::client::{ActivateRequest, Client, Event, UpdateEvent};
 use system_tray::data::BaseMap;
 
-pub const ICON_SIZE: i32 = 22;
+pub const ICON_SIZE: i32 = 32;
 
 pub(crate) fn runtime() -> &'static tokio::runtime::Runtime {
     static RT: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
