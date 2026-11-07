@@ -2,7 +2,7 @@
 name = "standalone-tray"
 version = "0.1.0"
 edition = "2021"
-description = "A StatusNotifierHost that displays tray icons in a normal Wayland window"
+description = "A Wayland system dashboard with live graphs, processes, world clocks, and a system tray"
 license = "MIT"
 
 [dependencies]
