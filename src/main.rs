@@ -135,6 +135,7 @@ fn build_ui(app: &gtk::Application) {
     let window = gtk::ApplicationWindow::builder()
         .application(app)
         .title("Tray")
+        .decorated(false)
         .default_width(1440)
         .default_height(980)
         .css_classes(["dashboard"])
