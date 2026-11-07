@@ -12,10 +12,19 @@ summoned and dismissed like any other. The point is to keep as much screen
 as possible while still having the convenience of `nm-applet`,
 `blueman-applet` and friends.
 
-It also shows a volume and a battery indicator next to the tray icons.
+A dark system dashboard fills the window, with tray icons, volume, and battery
+controls at the top and live activity graphs below.
 
 ## Features
 
+- **System dashboard**: CPU usage, used RAM and swap, network receive/send,
+  and physical disk read/write throughput. Graphs refresh every second and keep
+  two minutes of history. CPU and memory use a fixed 0–100% scale; network and
+  disk graphs scale to the visible history. Missing readings leave gaps.
+- **Clock and calendar**: live local time with seconds, date and timezone, plus a
+  browsable month calendar with week numbers and a Today button.
+- **Dark layout**: graphs expand with the window, including when your compositor
+  makes it fullscreen. Smaller windows scroll.
 - **StatusNotifier host**: registers a `StatusNotifierWatcher` and
   `StatusNotifierHost`, so applications like `nm-applet` and `blueman-applet`
   find it automatically.
@@ -29,7 +38,7 @@ It also shows a volume and a battery indicator next to the tray icons.
 - **Battery widget**: icon + percentage from UPower, with time-to-empty /
   time-to-full in the tooltip.
 
-Widgets hide themselves when their backend is unavailable (no audio server,
+Volume and battery widgets hide themselves when their backend is unavailable (no audio server,
 no battery), so the same binary works on desktops.
 
 ## Installation
@@ -39,6 +48,12 @@ Dependencies:
 - GTK 4 development libraries (`libgtk-4-dev` on Debian/Ubuntu,
   `gtk4-devel` on Fedora, `gtk4` on Arch)
 - a Rust toolchain (https://rustup.rs)
+
+System graphs read Linux `/proc` and `/sys` directly; no monitoring service or
+additional commands are required. RAM usage excludes memory available for reuse,
+including reclaimable cache. Network totals include all interfaces except loopback
+(and can include virtual interfaces); disk totals exclude partitions and mapped
+layers to avoid counting the same I/O twice.
 
 Runtime (all optional):
 

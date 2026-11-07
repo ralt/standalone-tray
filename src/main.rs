@@ -1,6 +1,8 @@
 mod battery;
+mod calendar;
 mod icon;
 mod menu;
+mod monitor;
 mod volume;
 
 use std::cell::RefCell;
@@ -54,6 +56,18 @@ impl Tray {
 }
 
 fn build_ui(app: &gtk::Application) {
+    if let Some(settings) = gtk::Settings::default() {
+        settings.set_gtk_application_prefer_dark_theme(true);
+    }
+    let css = gtk::CssProvider::new();
+    css.load_from_data(include_str!("style.css"));
+    if let Some(display) = gdk::Display::default() {
+        gtk::style_context_add_provider_for_display(
+            &display,
+            &css,
+            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
+    }
     let container = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
         .spacing(4)
@@ -75,14 +89,46 @@ fn build_ui(app: &gtk::Application) {
         .halign(gtk::Align::Center)
         .valign(gtk::Align::Center)
         .build();
+    row.add_css_class("tray-controls");
     row.append(&container);
     row.append(&volume::widget());
     row.append(&battery::widget());
 
+    let title = gtk::Label::new(Some("System activity"));
+    title.set_xalign(0.0);
+    title.add_css_class("dashboard-title");
+    let subtitle = gtk::Label::new(Some("LIVE  ·  1 second refresh  ·  2 minute history"));
+    subtitle.set_xalign(0.0);
+    subtitle.add_css_class("dashboard-subtitle");
+    let heading = gtk::Box::new(gtk::Orientation::Vertical, 6);
+    heading.set_hexpand(true);
+    heading.append(&title);
+    heading.append(&subtitle);
+    let header = gtk::Box::new(gtk::Orientation::Horizontal, 24);
+    header.add_css_class("dashboard-header");
+    header.append(&heading);
+    header.append(&row);
+    let content = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    content.add_css_class("dashboard-content");
+    content.append(&header);
+    let body = gtk::Box::new(gtk::Orientation::Horizontal, 16);
+    body.set_vexpand(true);
+    body.append(&monitor::widget());
+    body.append(&calendar::widget());
+    content.append(&body);
+    let scroll = gtk::ScrolledWindow::builder()
+        .hscrollbar_policy(gtk::PolicyType::Automatic)
+        .vscrollbar_policy(gtk::PolicyType::Automatic)
+        .child(&content)
+        .build();
+
     let window = gtk::ApplicationWindow::builder()
         .application(app)
         .title("Tray")
-        .child(&row)
+        .default_width(1440)
+        .default_height(760)
+        .css_classes(["dashboard"])
+        .child(&scroll)
         .build();
     window.present();
 
