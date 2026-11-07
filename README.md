@@ -27,8 +27,11 @@ controls at the top and live activity graphs below.
   every two seconds; new processes show CPU after their first full interval. Drag
   the divider between the graphs and process table to resize them. Unreadable or exited
   processes are skipped. The table is read-only.
-- **Clock and calendar**: live local time with seconds, date and timezone, plus a
-  browsable month calendar with week numbers and a Today button.
+- **Clock and calendar**: live local time with seconds, date, IANA timezone name,
+  and UTC offset, plus clocks for UTC, New York, California (Los Angeles), India
+  (Kolkata), and Australia (Sydney). Each clock shows its own date and follows
+  daylight saving rules. A browsable month calendar has week numbers and a Today
+  button. All clocks share one timer.
 - **Dark layout**: graphs expand with the window, including when your compositor
   makes it fullscreen. Smaller windows scroll.
 - **StatusNotifier host**: registers a `StatusNotifierWatcher` and
