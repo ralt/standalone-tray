@@ -3,6 +3,7 @@ mod calendar;
 mod icon;
 mod menu;
 mod monitor;
+mod processes;
 mod volume;
 
 use std::cell::RefCell;
@@ -113,7 +114,16 @@ fn build_ui(app: &gtk::Application) {
     content.append(&header);
     let body = gtk::Box::new(gtk::Orientation::Horizontal, 16);
     body.set_vexpand(true);
-    body.append(&monitor::widget());
+    let activity = gtk::Paned::new(gtk::Orientation::Vertical);
+    activity.set_hexpand(true);
+    activity.set_vexpand(true);
+    activity.set_wide_handle(true);
+    activity.set_start_child(Some(&monitor::widget()));
+    activity.set_end_child(Some(&processes::widget()));
+    activity.set_position(440);
+    activity.set_shrink_start_child(false);
+    activity.set_shrink_end_child(false);
+    body.append(&activity);
     body.append(&calendar::widget());
     content.append(&body);
     let scroll = gtk::ScrolledWindow::builder()
@@ -126,7 +136,7 @@ fn build_ui(app: &gtk::Application) {
         .application(app)
         .title("Tray")
         .default_width(1440)
-        .default_height(760)
+        .default_height(980)
         .css_classes(["dashboard"])
         .child(&scroll)
         .build();

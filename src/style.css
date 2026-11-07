@@ -35,3 +35,20 @@ window.dashboard {
 .dashboard calendar header { background: transparent; }
 .dashboard calendar .today { box-shadow: inset 0 -2px #6bc7b8; }
 .dashboard .calendar-panel button { background: #242e39; color: #d8dfe7; border-color: #354251; }
+.dashboard .process-panel {
+    background: #181e26;
+    border: 1px solid #2b3440;
+    border-radius: 16px;
+    padding: 16px;
+}
+.dashboard .process-table { background: #181e26; color: #d8dfe7; }
+.dashboard .process-table header button { background: #242e39; color: #95a3b5; padding: 6px 8px; }
+.dashboard .process-table row:nth-child(even) { background: #1c232c; }
+.dashboard .process-cell { font-family: monospace; font-size: 12px; padding: 3px 8px; }
+.dashboard .process-cpu { color: #6bc7b8; }
+.dashboard .process-memory { color: #a899e0; }
+.dashboard .process-panel searchentry { background: #101419; color: #d8dfe7; border-color: #354251; }
+.dashboard paned > separator { min-height: 12px; background: #101419; }
+.dashboard .process-table cell { padding: 0; }
+.dashboard .process-table row { min-height: 0; background: #181e26; }
+.dashboard .process-table row:nth-child(even) { background: #1c232c; }

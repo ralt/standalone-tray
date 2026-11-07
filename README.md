@@ -21,6 +21,12 @@ controls at the top and live activity graphs below.
   and physical disk read/write throughput. Graphs refresh every second and keep
   two minutes of history. CPU and memory use a fixed 0–100% scale; network and
   disk graphs scale to the visible history. Missing readings leave gaps.
+- **Processes**: live, searchable process table with sortable PID, user, state,
+  CPU, RAM percentage, resident memory, thread count, nice level, and command.
+  CPU follows htop's convention: 100% is one busy core. Process readings refresh
+  every two seconds; new processes show CPU after their first full interval. Drag
+  the divider between the graphs and process table to resize them. Unreadable or exited
+  processes are skipped. The table is read-only.
 - **Clock and calendar**: live local time with seconds, date and timezone, plus a
   browsable month calendar with week numbers and a Today button.
 - **Dark layout**: graphs expand with the window, including when your compositor

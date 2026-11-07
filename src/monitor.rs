@@ -182,7 +182,7 @@ impl Chart {
         detail.set_xalign(0.0);
         detail.add_css_class("metric-detail");
         let area = gtk::DrawingArea::builder()
-            .height_request(100)
+            .height_request(60)
             .hexpand(true)
             .vexpand(true)
             .build();
