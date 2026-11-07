@@ -6,9 +6,10 @@ Live system graphs, an htop-style process table, world clocks, a calendar, and
 tray applets, all in one GTK 4 window. Tile it, float it, make it fullscreen, or
 hide it until you need it.
 
-Built for setups such as Nucleotide and EWM, where you want desktop status in a
-window you can summon and dismiss. Your compositor manages it like any other
-application, without a panel reserving screen space.
+Built for minimal Wayland window managers, where you assemble your own desktop
+instead of using a full desktop environment. Keep system status in a window you
+can summon and dismiss, managed like any other application, without a panel
+reserving screen space.
 
 ## What's inside
 
