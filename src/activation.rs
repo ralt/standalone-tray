@@ -32,13 +32,38 @@ pub async fn activate(address: &str, x: i32, y: i32) -> Result<(), String> {
 }
 
 async fn activate_with_config(address: &str, x: i32, y: i32, config: &str) -> Result<(), String> {
-    let (destination, path) = address
-        .split_once('/')
-        .map(|(destination, path)| (destination, format!("/{path}")))
-        .unwrap_or((address, "/StatusNotifierItem".to_string()));
     let connection = zbus::Connection::session()
         .await
         .map_err(|e| e.to_string())?;
+    let (destination, mut path) = address
+        .split_once('/')
+        .map(|(destination, path)| (destination, format!("/{path}")))
+        .unwrap_or((address, "/StatusNotifierItem".to_string()));
+    // system-tray keys items by bus name and drops their registered object path.
+    // Resolve that path from the watcher instead of assuming /StatusNotifierItem.
+    if !address.contains('/') {
+        if let Ok(watcher) = zbus::Proxy::new(
+            &connection,
+            "org.kde.StatusNotifierWatcher",
+            "/StatusNotifierWatcher",
+            "org.kde.StatusNotifierWatcher",
+        )
+        .await
+        {
+            if let Ok(items) = watcher
+                .get_property::<Vec<String>>("RegisteredStatusNotifierItems")
+                .await
+            {
+                if let Some(registered_path) = items
+                    .iter()
+                    .filter_map(|item| item.split_once('/'))
+                    .find_map(|(name, path)| (name == destination).then_some(path))
+                {
+                    path = format!("/{registered_path}");
+                }
+            }
+        }
+    }
     let proxy = zbus::Proxy::new(&connection, destination, path, "org.kde.StatusNotifierItem")
         .await
         .map_err(|e| e.to_string())?;
@@ -82,6 +107,17 @@ mod tests {
         }
     }
 
+    struct Watcher {
+        items: Vec<String>,
+    }
+    #[zbus::interface(name = "org.kde.StatusNotifierWatcher")]
+    impl Watcher {
+        #[zbus(property, name = "RegisteredStatusNotifierItems")]
+        fn registered_items(&self) -> Vec<String> {
+            self.items.clone()
+        }
+    }
+
     struct Normal;
     #[zbus::interface(name = "org.kde.StatusNotifierItem")]
     impl Normal {
@@ -114,6 +150,30 @@ mod tests {
                 .await
                 .unwrap();
             let address = |path| format!("{}{path}", service.unique_name().unwrap());
+            let _watcher = zbus::connection::Builder::session()
+                .unwrap()
+                .name("org.kde.StatusNotifierWatcher")
+                .unwrap()
+                .serve_at(
+                    "/StatusNotifierWatcher",
+                    Watcher {
+                        items: vec![address("/MenuOnly")],
+                    },
+                )
+                .unwrap()
+                .build()
+                .await
+                .unwrap();
+            // Real system-tray events contain only the bus name, even when the
+            // applet registered a nonstandard path. Exercise that exact case.
+            assert!(activate_with_config(
+                service.unique_name().unwrap().as_str(),
+                0,
+                0,
+                "test-menu-only=/usr/bin/true"
+            )
+            .await
+            .is_ok());
             assert!(activate_with_config(&address("/MenuOnly"), 0, 0, "")
                 .await
                 .is_err());
