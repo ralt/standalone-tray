@@ -6,7 +6,10 @@ use system_tray::menu::{MenuItem, MenuType, ToggleState, ToggleType};
 
 /// Build a GTK menu model and its action group from a DBusMenu layout.
 /// Activating an entry invokes `on_activate` with the DBusMenu item id.
-pub fn build(items: &[MenuItem], on_activate: &Rc<dyn Fn(i32)>) -> (gio::Menu, gio::SimpleActionGroup) {
+pub fn build(
+    items: &[MenuItem],
+    on_activate: &Rc<dyn Fn(i32)>,
+) -> (gio::Menu, gio::SimpleActionGroup) {
     let actions = gio::SimpleActionGroup::new();
     let model = build_level(items, &actions, on_activate);
     (model, actions)
@@ -80,4 +83,69 @@ fn clean_label(label: &str) -> glib::GString {
         }
     }
     out.into()
+}
+
+/// Read the current menu, including protocol defaults for omitted properties.
+pub async fn fetch_layout(
+    address: &str,
+    path: &str,
+) -> Result<system_tray::menu::TrayMenu, String> {
+    let destination = address.split('/').next().unwrap_or(address);
+    let connection = zbus::Connection::session()
+        .await
+        .map_err(|e| e.to_string())?;
+    let proxy = zbus::Proxy::new(&connection, destination, path, "com.canonical.dbusmenu")
+        .await
+        .map_err(|e| e.to_string())?;
+    let reply = proxy
+        .call_method("GetLayout", &(0_i32, -1_i32, Vec::<&str>::new()))
+        .await
+        .map_err(|e| e.to_string())?;
+    type Layout = (
+        u32,
+        (
+            i32,
+            std::collections::HashMap<String, zbus::zvariant::OwnedValue>,
+            Vec<zbus::zvariant::OwnedValue>,
+        ),
+    );
+    let (_, (id, _, children)): Layout = reply.body().deserialize().map_err(|e| e.to_string())?;
+    let submenus = children
+        .iter()
+        .map(MenuItem::try_from)
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+    Ok(system_tray::menu::TrayMenu {
+        id: id as u32,
+        submenus,
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use zbus::zvariant::{OwnedValue, Structure};
+
+    #[test]
+    fn fresh_layout_restores_default_enabled_state() {
+        let mut props = std::collections::HashMap::new();
+        props.insert(
+            "label".to_string(),
+            OwnedValue::from(zbus::zvariant::Str::from("Install updates")),
+        );
+        props.insert("enabled".to_string(), OwnedValue::from(false));
+        let value = Structure::from((2_i32, props.clone(), Vec::<OwnedValue>::new()));
+        assert!(
+            !MenuItem::try_from(&OwnedValue::try_from(value).unwrap())
+                .unwrap()
+                .enabled
+        );
+        props.remove("enabled");
+        let value = Structure::from((2_i32, props, Vec::<OwnedValue>::new()));
+        assert!(
+            MenuItem::try_from(&OwnedValue::try_from(value).unwrap())
+                .unwrap()
+                .enabled
+        );
+    }
 }

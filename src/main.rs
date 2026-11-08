@@ -1,3 +1,4 @@
+mod activation;
 mod battery;
 mod calendar;
 mod icon;
@@ -48,11 +49,6 @@ impl Tray {
     fn item(&self, address: &str) -> Option<system_tray::item::StatusNotifierItem> {
         let items = self.items.as_ref()?.lock().ok()?;
         items.get(address).map(|(item, _)| item.clone())
-    }
-
-    fn menu(&self, address: &str) -> Option<system_tray::menu::TrayMenu> {
-        let items = self.items.as_ref()?.lock().ok()?;
-        items.get(address).and_then(|(_, menu)| menu.clone())
     }
 }
 
@@ -324,7 +320,13 @@ fn send_activate(tray: &Rc<RefCell<Tray>>, request: ActivateRequest) {
         return;
     };
     runtime().spawn(async move {
-        if let Err(e) = client.activate(request).await {
+        let result = match request {
+            ActivateRequest::Default { address, x, y } => {
+                activation::activate(&address, x, y).await
+            }
+            request => client.activate(request).await.map_err(|e| e.to_string()),
+        };
+        if let Err(e) = result {
             eprintln!("standalone-tray: activate request failed: {e}");
         }
     });
@@ -345,23 +347,30 @@ fn show_menu(tray: &Rc<RefCell<Tray>>, address: &str, widget: &gtk::Image, x: f6
         return;
     };
 
-    // Let lazy items (e.g. nm-applet) populate their menu before we render it.
-    let about_to_show = runtime().spawn({
-        let client = client.clone();
-        let address = address.to_string();
-        let menu_path = menu_path.clone();
-        async move { client.about_to_show_menuitem(address, menu_path, 0).await }
+    // Fetch a complete layout after AboutToShow. The library's menu cache does
+    // not restore defaults when an ItemsPropertiesUpdated event removes a
+    // property (for example enabled=false becoming the default enabled=true).
+    let address_owned = address.to_string();
+    let path_owned = menu_path.clone();
+    let menu_task = runtime().spawn(async move {
+        let _ = client
+            .about_to_show_menuitem(address_owned.clone(), path_owned.clone(), 0)
+            .await;
+        menu::fetch_layout(&address_owned, &path_owned).await
     });
 
     let tray_ref = Rc::downgrade(tray);
     let address = address.to_string();
     let widget = widget.clone();
     glib::spawn_future_local(async move {
-        let _ = about_to_show.await;
-        let Some(tray) = tray_ref.upgrade() else {
-            return;
+        let tray_menu = match menu_task.await {
+            Ok(Ok(menu)) => menu,
+            result => {
+                eprintln!("standalone-tray: failed to refresh menu: {result:?}");
+                return;
+            }
         };
-        let Some(tray_menu) = tray.borrow().menu(&address) else {
+        let Some(tray) = tray_ref.upgrade() else {
             return;
         };
 

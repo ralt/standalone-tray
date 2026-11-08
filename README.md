@@ -85,6 +85,24 @@ other tray hosts, such as Waybar's tray module, before starting standalone-tray.
 - Scroll over the volume indicator to adjust it in 5% steps.
 - Hover over the battery indicator for charging or remaining-time information.
 
+Some AppIndicator applications, including Debian's `package-update-indicator`,
+do not expose the SNI `Activate` method. For that update indicator, left click
+falls back to its existing `update-command` GSettings preference, the same command
+used by its Install updates menu entry. No extra tray setting is needed.
+
+For other menu-only applets, configure a fallback command by SNI ID:
+
+```sh
+STANDALONE_TRAY_ACTIVATE_COMMANDS='icon-id=/path/to/program' standalone-tray
+```
+
+The value accepts one `icon-id=command` per line and can override the updater
+fallback too. Commands support quoted arguments and run without a shell. Left
+click always tries the normal activation request first; a fallback runs only when
+the method is missing. Other activation failures are reported rather than hidden.
+Right-click menus fetch their current layout when opened, so applet state changes
+can restore entries that were previously disabled.
+
 The process table is read-only. Click its headings to change the sort order and
 use the search field to narrow the list. Hover over a command to see the full
 command line.
@@ -114,6 +132,12 @@ skipped.
 ```sh
 cargo test --locked
 cargo clippy --locked --all-targets -- -D warnings
+```
+
+The activation integration test uses an isolated session bus:
+
+```sh
+dbus-run-session -- cargo test --locked activation_uses_fallback_only_when_method_is_missing -- --ignored
 ```
 
 Graphical tests are ignored by default. Run each check separately on a test
