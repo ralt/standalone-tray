@@ -18,6 +18,7 @@ use system_tray::client::{ActivateRequest, Client, Event, UpdateEvent};
 use system_tray::data::BaseMap;
 
 pub const ICON_SIZE: i32 = 32;
+pub const REFRESH_INTERVAL: std::time::Duration = std::time::Duration::from_secs(10);
 
 pub(crate) fn runtime() -> &'static tokio::runtime::Runtime {
     static RT: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
@@ -94,7 +95,10 @@ fn build_ui(app: &gtk::Application) {
     let title = gtk::Label::new(Some("System activity"));
     title.set_xalign(0.0);
     title.add_css_class("dashboard-title");
-    let subtitle = gtk::Label::new(Some("LIVE  ·  1 second refresh  ·  2 minute history"));
+    let subtitle = gtk::Label::new(Some(&format!(
+        "LIVE  ·  {} second refresh  ·  2 minute history",
+        REFRESH_INTERVAL.as_secs()
+    )));
     subtitle.set_xalign(0.0);
     subtitle.add_css_class("dashboard-subtitle");
     let heading = gtk::Box::new(gtk::Orientation::Vertical, 6);

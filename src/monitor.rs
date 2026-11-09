@@ -1,13 +1,13 @@
 //! Linux system counters. Sampling runs off the GTK thread; histories are bounded.
 use std::collections::{HashMap, VecDeque};
 use std::fs;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 use std::{cell::RefCell, rc::Rc};
 
 use gtk::prelude::*;
 use gtk::{cairo, glib};
 
-const HISTORY: usize = 120;
+const HISTORY: usize = 120 / crate::REFRESH_INTERVAL.as_secs() as usize;
 type Counters = HashMap<String, [u64; 2]>;
 type Color = (f64, f64, f64);
 const COLORS: [Color; 4] = [
@@ -323,7 +323,7 @@ pub fn widget() -> gtk::Grid {
         let mut previous = Snapshot::read();
         let mut last = Instant::now();
         loop {
-            std::thread::sleep(Duration::from_secs(1));
+            std::thread::sleep(crate::REFRESH_INTERVAL);
             let current = Snapshot::read();
             let now = Instant::now();
             let elapsed = now.duration_since(last).as_secs_f64();

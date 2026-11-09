@@ -4,7 +4,6 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fs;
 use std::rc::Rc;
-use std::time::Duration;
 
 use glib::subclass::prelude::*;
 use gtk::prelude::*;
@@ -394,9 +393,10 @@ pub fn widget() -> gtk::Box {
     header.append(&count);
     header.append(&search);
     panel.append(&header);
-    let hint = gtk::Label::new(Some(
-        "2s refresh · 100% CPU = one core · RAM = resident memory · click a heading to sort",
-    ));
+    let hint = gtk::Label::new(Some(&format!(
+        "{}s refresh · 100% CPU = one core · RAM = resident memory · click a heading to sort",
+        crate::REFRESH_INTERVAL.as_secs()
+    )));
     hint.set_xalign(0.0);
     hint.add_css_class("dashboard-subtitle");
     panel.append(&hint);
@@ -458,7 +458,7 @@ pub fn widget() -> gtk::Box {
             if tx.send_blocking(sampler.sample()).is_err() {
                 break;
             }
-            std::thread::sleep(Duration::from_secs(2));
+            std::thread::sleep(crate::REFRESH_INTERVAL);
         }
     });
     let weak = panel.downgrade();
@@ -487,6 +487,7 @@ pub fn widget() -> gtk::Box {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::Duration;
 
     fn stat(pid: u32, name: &str, user: u64, system: u64, started: u64) -> String {
         let mut fields = vec!["0".to_string(); 22];
@@ -579,7 +580,7 @@ mod tests {
                 std::thread::sleep(Duration::from_millis(5));
             }
         };
-        pump(2400);
+        pump(crate::REFRESH_INTERVAL.as_millis() as u64 + 400);
         assert!(model.n_items() > 0, "must show real processes");
         assert!(
             scroll.vadjustment().value() < 1.0,
@@ -606,7 +607,7 @@ mod tests {
             .downcast::<gtk::ColumnViewColumn>()
             .unwrap();
         view.sort_by_column(Some(&column), gtk::SortType::Descending);
-        pump(2200);
+        pump(crate::REFRESH_INTERVAL.as_millis() as u64 + 200);
         assert_eq!(
             model.item(0).unwrap(),
             first_slot,
@@ -629,7 +630,7 @@ mod tests {
             .collect();
         assert!(memory.windows(2).all(|pair| pair[0] >= pair[1]));
         search.set_text("no-process-matches-this-filter-xyz");
-        pump(2300);
+        pump(crate::REFRESH_INTERVAL.as_millis() as u64 + 300);
         assert_eq!(model.n_items(), 0, "filter must survive live refresh");
         search.set_text("");
         pump(300);

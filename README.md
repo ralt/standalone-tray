@@ -14,11 +14,11 @@ reserving screen space.
 ## What's inside
 
 - **System graphs** for CPU, RAM, network traffic, and physical disk I/O. They
-  update every second and keep two minutes of history. Swap usage appears next
+  update every 10 seconds and keep two minutes of history. Swap usage appears next
   to the RAM reading.
 - **A live process table** with CPU and RAM usage, resident memory, PID, user,
   state, thread count, nice level, and command. Sort by any column, filter by
-  command, user, or PID, and resize the columns. Readings update every two seconds.
+  command, user, or PID, and resize the columns. Readings update every 10 seconds.
 - **Local and world clocks**, with seconds and a date for each location. The
   local clock shows the system timezone name, such as `Europe/Paris`, and its UTC
   offset. World clocks cover UTC, New York, California (Los Angeles), India
